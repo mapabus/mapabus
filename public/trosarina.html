@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <script src="/auth-check.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Vožnje - Avala, Sopot, Mladenovac</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            background: white;
+            padding: 20px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .section-title {
+            color: #1e3c72;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .section-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .lines-badges {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .line-badge {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .direction-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .direction-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .direction-header.green {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+
+        .direction-header.orange {
+            background: linear-gradient(135deg, #e67e22 0%, #f39c12 100%);
+        }
+
+        .direction-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .direction-subtitle {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .schedule-grid {
+            padding: 15px;
+        }
+
+        .hour-row {
+            display: flex;
+            align-items: flex-start;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 10px 0;
+        }
+
+        .hour-row:last-child {
+            border-bottom: none;
+        }
+
+        .hour-cell {
+            width: 50px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #1e3c72;
+            text-align: center;
+            padding-top: 5px;
+            flex-shrink: 0;
+        }
+
+        .minutes-cell {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .minute-badge {
+            background: #e3f2fd;
+            color: #1e3c72;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 50px;
+        }
+
+        .minute-badge:hover {
+            background: #1e3c72;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .minute-badge .minute {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .minute-badge .line-tag {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .minute-badge:hover .line-tag {
+            opacity: 1;
+        }
+
+        /* Boje za različite linije */
+        .minute-badge.line-451 { border-left: 4px solid #2196F3; }
+        .minute-badge.line-466 { border-left: 4px solid #4CAF50; }
+        .minute-badge.line-466a { border-left: 4px solid #8BC34A; }
+        .minute-badge.line-470 { border-left: 4px solid #FF9800; }
+        .minute-badge.line-470a { border-left: 4px solid #FFC107; }
+        .minute-badge.line-474 { border-left: 4px solid #9C27B0; }
+        .minute-badge.line-450 { border-left: 4px solid #E91E63; }
+        .minute-badge.line-491 { border-left: 4px solid #00BCD4; }
+        .minute-badge.line-491a { border-left: 4px solid #009688; }
+
+        /* Tooltip / Oblačić */
+        .tooltip {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e3c72;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            white-space: nowrap;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: #1e3c72;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tooltip-vehicle {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .tooltip-line {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 3px;
+        }
+
+        .legend {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .legend-items {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+        }
+
+        .legend-color.c-451 { background: #2196F3; }
+        .legend-color.c-466 { background: #4CAF50; }
+        .legend-color.c-466a { background: #8BC34A; }
+        .legend-color.c-470 { background: #FF9800; }
+        .legend-color.c-470a { background: #FFC107; }
+        .legend-color.c-474 { background: #9C27B0; }
+        .legend-color.c-450 { background: #E91E63; }
+        .legend-color.c-491 { background: #00BCD4; }
+        .legend-color.c-491a { background: #009688; }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hour-cell {
+                width: 40px;
+                font-size: 18px;
+            }
+            
+            .minute-badge {
+                padding: 6px 10px;
+                min-width: 45px;
+            }
+            
+            .minute-badge .minute {
+                font-size: 14px;
+            }
+            
+            .minute-badge .line-tag {
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- ========== SEKCIJA 1: PO AVALA ========== -->
+        <div class="section-header">
+            <div class="section-title">PO Avala</div>
+            <p class="section-subtitle">Trošarina → Okolina (Stojnik, Vrčin, Ivanča, Parcani)</p>
+            <div class="lines-badges">
+                <span class="line-badge">451</span>
+                <span class="line-badge">466</span>
+                <span class="line-badge">470</span>
+                <span class="line-badge">470a</span>
+                <span class="line-badge">474</span>
+            </div>
+        </div>
+
+        <div class="direction-card">
+            <div class="direction-header">
+                <div class="direction-title">Trošarina → Okolina</div>
+                <div class="direction-subtitle">Polasci sa Trošarine</div>
+            </div>
+            <div class="schedule-grid" id="schedule-avala">
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-title">Legenda linija - PO Avala</div>
+            <div class="legend-items">
+                <div class="legend-item"><div class="legend-color c-451"></div><span>451 (Stojnik)</span></div>
+                <div class="legend-item"><div class="legend-color c-466"></div><span>466 (Vrčin)</span></div>
+                <div class="legend-item"><div class="legend-color c-466a"></div><span>466a (Vrčin)</span></div>
+                <div class="legend-item"><div class="legend-color c-470"></div><span>470 (Ivanča)</span></div>
+                <div class="legend-item"><div class="legend-color c-470a"></div><span>470a (Ivanča)</span></div>
+                <div class="legend-item"><div class="legend-color c-474"></div><span>474 (Parcani)</span></div>
+            </div>
+        </div>
+
+        <!-- ========== SEKCIJA 2: RJ SOPOT (450) ========== -->
+        <div class="section-header">
+            <div class="section-title">RJ Sopot</div>
+            <p class="section-subtitle">Trošarina ↔ Sopot AS</p>
+            <div class="lines-badges">
+                <span class="line-badge">450</span>
+            </div>
+        </div>
+
+        <div class="two-columns">
+            <div class="direction-card">
+                <div class="direction-header green">
+                    <div class="direction-title">Trošarina → Sopot AS</div>
+                    <div class="direction-subtitle">Polasci sa Trošarine</div>
+                </div>
+                <div class="schedule-grid" id="schedule-450-sopot">
+                </div>
+            </div>
+
+            <div class="direction-card">
+                <div class="direction-header orange">
+                    <div class="direction-title">Sopot AS → Trošarina</div>
+                    <div class="direction-subtitle">Polasci iz Sopota</div>
+                </div>
+                <div class="schedule-grid" id="schedule-450-trosarina">
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== SEKCIJA 3: PO MLADENOVAC (491, 491A) ========== -->
+        <div class="section-header">
+            <div class="section-title">PO Mladenovac</div>
+            <p class="section-subtitle">Trošarina ↔ Mladenovac AS</p>
+            <div class="lines-badges">
+                <span class="line-badge">491</span>
+                <span class="line-badge">491a</span>
+            </div>
+        </div>
+
+        <div class="two-columns">
+            <div class="direction-card">
+                <div class="direction-header">
+                    <div class="direction-title">Trošarina → Mladenovac AS</div>
+                    <div class="direction-subtitle">Polasci sa Trošarine</div>
+                </div>
+                <div class="schedule-grid" id="schedule-491-mladenovac">
+                </div>
+            </div>
+
+            <div class="direction-card">
+                <div class="direction-header">
+                    <div class="direction-title">Mladenovac AS → Trošarina</div>
+                    <div class="direction-subtitle">Polasci iz Mladenovca</div>
+                </div>
+                <div class="schedule-grid" id="schedule-491-trosarina">
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-title">Legenda linija - PO Mladenovac</div>
+            <div class="legend-items">
+                <div class="legend-item"><div class="legend-color c-491"></div><span>491</span></div>
+                <div class="legend-item"><div class="legend-color c-491a"></div><span>491a</span></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ========== PODACI ==========
+        
+        // PO AVALA - samo smer SA TROŠARINE
+        const avalaData = [
+            // 451 - Stojnik
+            { time: "07:15", line: "451", vehicle: "P70152" },
+            { time: "12:45", line: "451", vehicle: "P70152" },
+            { time: "15:30", line: "451", vehicle: "P77807" },
+            { time: "17:30", line: "451", vehicle: "P70152" },
+            { time: "20:30", line: "451", vehicle: "P77807" },
+            { time: "22:10", line: "451", vehicle: "P70152" },
+            // 466 - Vrčin
+            { time: "06:30", line: "466", vehicle: "—" },
+            { time: "11:50", line: "466", vehicle: "—" },
+            { time: "17:10", line: "466", vehicle: "—" },
+            { time: "19:10", line: "466", vehicle: "—" },
+            // 466a - Vrčin
+            { time: "04:40", line: "466a", vehicle: "—" },
+            // 470 - Ivanča
+            { time: "06:15", line: "470", vehicle: "P77807" },
+            { time: "10:30", line: "470", vehicle: "P71028" },
+            { time: "12:15", line: "470", vehicle: "P71026" },
+            { time: "14:25", line: "470", vehicle: "P71030" },
+            { time: "15:15", line: "470", vehicle: "P71028" },
+            { time: "17:15", line: "470", vehicle: "P71030" },
+            { time: "19:30", line: "470", vehicle: "P71028" },
+            // 470a - Ivanča
+            { time: "08:00", line: "470a", vehicle: "P71026" },
+            { time: "22:30", line: "470a", vehicle: "P71028" },
+            // 474 - Parcani
+            { time: "10:45", line: "474", vehicle: "P77807" },
+            { time: "16:30", line: "474", vehicle: "P78154" },
+            { time: "21:00", line: "474", vehicle: "P71030" }
+        ];
+
+        // 450 - RJ SOPOT
+        const sopot450ToSopotData = [
+            { time: "06:40", line: "450", vehicle: "P71203" },
+            { time: "07:50", line: "450", vehicle: "P79438" },
+            { time: "08:30", line: "450", vehicle: "P71207" },
+            { time: "10:00", line: "450", vehicle: "P79452" },
+            { time: "10:50", line: "450", vehicle: "P71203" },
+            { time: "12:05", line: "450", vehicle: "P79438" },
+            { time: "12:40", line: "450", vehicle: "P79468" },
+            { time: "14:45", line: "450", vehicle: "P71203" },
+            { time: "15:20", line: "450", vehicle: "P79468" },
+            { time: "16:00", line: "450", vehicle: "P79438" },
+            { time: "18:10", line: "450", vehicle: "P71203" },
+            { time: "18:15", line: "450", vehicle: "P79468" },
+            { time: "20:40", line: "450", vehicle: "P71201" },
+            { time: "21:30", line: "450", vehicle: "P71203" },
+            { time: "23:20", line: "450", vehicle: "P79450" }
+        ];
+
+        const sopot450ToTrosarinaData = [
+            { time: "05:15", line: "450", vehicle: "P71203" },
+            { time: "06:20", line: "450", vehicle: "P79438" },
+            { time: "07:10", line: "450", vehicle: "P71207" },
+            { time: "08:40", line: "450", vehicle: "P79452" },
+            { time: "09:20", line: "450", vehicle: "P71203" },
+            { time: "10:40", line: "450", vehicle: "P79438" },
+            { time: "11:20", line: "450", vehicle: "P79468" },
+            { time: "13:20", line: "450", vehicle: "P71203" },
+            { time: "14:00", line: "450", vehicle: "P79468" },
+            { time: "14:40", line: "450", vehicle: "P79438" },
+            { time: "16:40", line: "450", vehicle: "P71203" },
+            { time: "17:00", line: "450", vehicle: "P79468" },
+            { time: "19:20", line: "450", vehicle: "P71203" },
+            { time: "19:40", line: "450", vehicle: "P71201" },
+            { time: "22:00", line: "450", vehicle: "P79450" }
+        ];
+
+        // 491, 491A - PO MLADENOVAC
+        const mladenovac491ToMladenovacData = [
+            { time: "05:30", line: "491", vehicle: "P77902" },
+            { time: "06:20", line: "491", vehicle: "P77266" },
+            { time: "07:00", line: "491", vehicle: "P77269" },
+            { time: "07:30", line: "491", vehicle: "P77263" },
+            { time: "08:00", line: "491", vehicle: "P79462" },
+            { time: "08:30", line: "491", vehicle: "P77902" },
+            { time: "09:00", line: "491", vehicle: "P77266" },
+            { time: "09:30", line: "491", vehicle: "P77263" },
+            { time: "10:00", line: "491", vehicle: "P77269" },
+            { time: "10:30", line: "491", vehicle: "P79462" },
+            { time: "11:00", line: "491", vehicle: "P77902" },
+            { time: "11:30", line: "491", vehicle: "P79467" },
+            { time: "12:00", line: "491", vehicle: "P77265" },
+            { time: "12:30", line: "491", vehicle: "P77266" },
+            { time: "13:00", line: "491", vehicle: "P77263" },
+            { time: "13:30", line: "491", vehicle: "P77269" },
+            { time: "14:00", line: "491", vehicle: "P79462" },
+            { time: "14:30", line: "491", vehicle: "P77902" },
+            { time: "15:00", line: "491", vehicle: "P77273" },
+            { time: "15:30", line: "491", vehicle: "P79467" },
+            { time: "16:00", line: "491", vehicle: "P77263" },
+            { time: "16:30", line: "491", vehicle: "P77269" },
+            { time: "17:00", line: "491", vehicle: "P79460" },
+            { time: "17:30", line: "491", vehicle: "P77902" },
+            { time: "18:00", line: "491", vehicle: "P77273" },
+            { time: "19:00", line: "491", vehicle: "P77263" },
+            { time: "19:30", line: "491", vehicle: "P77269" },
+            { time: "20:00", line: "491", vehicle: "P77255" },
+            { time: "21:00", line: "491", vehicle: "P77273" },
+            { time: "22:00", line: "491", vehicle: "P77263" },
+            { time: "23:00", line: "491", vehicle: "P77255" },
+            // 491a
+            { time: "00:00", line: "491a", vehicle: "P76435" }
+        ];
+
+        const mladenovac491ToTrosarinaData = [
+            { time: "04:00", line: "491", vehicle: "P77902" },
+            { time: "04:50", line: "491", vehicle: "P77266" },
+            { time: "05:30", line: "491", vehicle: "P77269" },
+            { time: "06:00", line: "491", vehicle: "P77263" },
+            { time: "06:30", line: "491", vehicle: "P79462" },
+            { time: "07:00", line: "491", vehicle: "P77902" },
+            { time: "07:30", line: "491", vehicle: "P77273" },
+            { time: "08:00", line: "491", vehicle: "P77266" },
+            { time: "08:30", line: "491", vehicle: "P77263" },
+            { time: "09:00", line: "491", vehicle: "P77269" },
+            { time: "09:30", line: "491", vehicle: "P79462" },
+            { time: "10:00", line: "491", vehicle: "P77902" },
+            { time: "10:30", line: "491", vehicle: "P77265" },
+            { time: "11:00", line: "491", vehicle: "P77266" },
+            { time: "11:30", line: "491", vehicle: "P77263" },
+            { time: "12:00", line: "491", vehicle: "P77269" },
+            { time: "12:30", line: "491", vehicle: "P79462" },
+            { time: "13:00", line: "491", vehicle: "P77902" },
+            { time: "13:30", line: "491", vehicle: "P77273" },
+            { time: "14:30", line: "491", vehicle: "P77263" },
+            { time: "15:00", line: "491", vehicle: "P77269" },
+            { time: "15:30", line: "491", vehicle: "P79460" },
+            { time: "16:00", line: "491", vehicle: "P77902" },
+            { time: "16:30", line: "491", vehicle: "P77273" },
+            { time: "17:30", line: "491", vehicle: "P77263" },
+            { time: "18:00", line: "491", vehicle: "P77269" },
+            { time: "18:30", line: "491", vehicle: "P77255" },
+            { time: "19:30", line: "491", vehicle: "P77273" },
+            { time: "20:30", line: "491", vehicle: "P77263" },
+            { time: "21:30", line: "491", vehicle: "P77255" },
+            { time: "22:30", line: "491", vehicle: "P76435" }
+        ];
+
+        // ========== FUNKCIJE ==========
+
+        function groupByHour(data) {
+            const grouped = {};
+            data.forEach(item => {
+                const [hour, minute] = item.time.split(':');
+                const h = parseInt(hour);
+                if (!grouped[h]) grouped[h] = [];
+                grouped[h].push({ minute, line: item.line, vehicle: item.vehicle });
+            });
+            return grouped;
+        }
+
+        function renderSchedule(containerId, data) {
+            const container = document.getElementById(containerId);
+            const grouped = groupByHour(data);
+            const hours = Object.keys(grouped).map(Number).sort((a, b) => a - b);
+            
+            let html = '';
+            hours.forEach(hour => {
+                const hourStr = hour.toString().padStart(2, '0');
+                const minutes = grouped[hour].sort((a, b) => parseInt(a.minute) - parseInt(b.minute));
+                
+                html += `<div class="hour-row">
+                    <div class="hour-cell">${hourStr}</div>
+                    <div class="minutes-cell">`;
+                
+                minutes.forEach(m => {
+                    const lineClass = `line-${m.line.replace(/\s/g, '')}`;
+                    html += `
+                        <div class="minute-badge ${lineClass}" onclick="showTooltip(this)">
+                            <span class="minute">${m.minute}</span>
+                            <span class="line-tag">${m.line}</span>
+                            <div class="tooltip">
+                                <div class="tooltip-vehicle">${m.vehicle}</div>
+                                <div class="tooltip-line">Linija ${m.line}</div>
+                            </div>
+                        </div>`;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function showTooltip(element) {
+            // Zatvori sve otvorene tooltipe
+            document.querySelectorAll('.tooltip.show').forEach(t => t.classList.remove('show'));
+            // Otvori ovaj
+            const tooltip = element.querySelector('.tooltip');
+            tooltip.classList.add('show');
+            
+            // Zatvori nakon 3 sekunde
+            setTimeout(() => {
+                tooltip.classList.remove('show');
+            }, 3000);
+        }
+
+        // Zatvori tooltip klikom bilo gde
+        document.addEventListener('click', function(e) {
+            if (! e.target.closest('.minute-badge')) {
+                document.querySelectorAll('.tooltip.show').forEach(t => t.classList.remove('show'));
+            }
+        });
+
+        // ========== INICIJALIZACIJA ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // PO Avala
+            renderSchedule('schedule-avala', avalaData);
+            
+            // RJ Sopot (450)
+            renderSchedule('schedule-450-sopot', sopot450ToSopotData);
+            renderSchedule('schedule-450-trosarina', sopot450ToTrosarinaData);
+            
+            // PO Mladenovac (491, 491a)
+            renderSchedule('schedule-491-mladenovac', mladenovac491ToMladenovacData);
+            renderSchedule('schedule-491-trosarina', mladenovac491ToTrosarinaData);
+        });
+    </script>
+</body>
+</html>
