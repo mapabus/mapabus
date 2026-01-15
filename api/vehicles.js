@@ -171,7 +171,7 @@ function detectRouteByDestination(stopId, stationsMap) {
 
     '405N': ['20146', '20147', '27656'],   
 
-    '7A': ['20783'] 
+    '21007': ['20783'] 
   };
 
   const normalizedId = normalizeStopId(stopId);
