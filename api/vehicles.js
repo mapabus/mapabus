@@ -169,7 +169,7 @@ function detectRouteByDestination(stopId, stationsMap) {
     // Linija 40A
     '40A': ['21691', '20256'],   // Banjica 2 ili Studentski Trg
 
-    '405N': ['20146', '20147', '27656'],   
+    '50405': ['20146', '20147', '27656'],   
 
     '21007': ['20783'] 
   };
