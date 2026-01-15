@@ -170,6 +170,8 @@ function detectRouteByDestination(stopId, stationsMap) {
     '40A': ['21691', '20256'],   // Banjica 2 ili Studentski Trg
 
     '405N': ['20146', '20147', '27656']   
+
+    '7A': ['20783'] 
   };
 
   const normalizedId = normalizeStopId(stopId);
